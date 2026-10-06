@@ -1,10 +1,16 @@
-import { YUNA_PROFILE } from "../profiles/yuna";
+import { YUNA_PROFILE, YUNA_STICKER_PACK } from "../profiles/yuna";
 
 /**
- * The selected AI profile for the application. This constant is used to define the system message that will be sent to the AI model at the beginning of each session.
- * It is imported from the profiles directory, allowing for easy customization of the AI's behavior and personality.
- *
- * @constant {string} SELECTED_AI_PROFILE - The system message for the AI model, defining its behavior and personality.
- * @default YUNA_PROFILE - The default profile imported from the profiles directory.
+ * DEFAULT_AI_PROFILE is the default AI profile used in the application. It is set to YUNA_PROFILE, which defines the characteristics and behavior of the AI assistant named "Yuna".
  */
-export const SELECTED_AI_PROFILE = YUNA_PROFILE;
+export const DEFAULT_AI_PROFILE = YUNA_PROFILE;
+
+/**
+ * DEFAULT_STICKER_PACK is the default sticker pack used in the application. It is set to YUNA_STICKER_PACK, which defines the sticker pack created by the AI assistant named "Yuna".
+ */
+export const DEFAULT_STICKER_PACK = YUNA_STICKER_PACK;
+
+/**
+ * SESSION_HISTORY_LIMIT defines the maximum number of messages to retain in the session history for each user. When the limit is exceeded, older messages will be removed to maintain the specified limit.
+ */
+export const SESSION_HISTORY_LIMIT = 19;

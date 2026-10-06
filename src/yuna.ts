@@ -12,6 +12,7 @@ dotenv.config();
 
 (async () => {
   const client = await connectWhatsApp();
+  const activeProcessingUsers = new Set<string>(); // Track users currently being processed to prevent overlapping responses
 
   /**
    * Handle incoming calls and messages.
@@ -40,36 +41,54 @@ dotenv.config();
 
   /**
    * Handle incoming messages.
-   *
    * Ignore messages sent by the bot itself.
    */
   client.ev.on("messages.upsert", async (event) => {
-    if (event.type !== "notify") return;
+    if (event.type !== "notify" || !event.messages?.length) return;
 
     for (const message of event.messages) {
       if (isFromMe(message)) continue;
 
-      const jid = message.key.remoteJid!;
-      const messageContent = getMessageContent(message);
-      const hasImage = getMessageType(message) === "image";
+      const jid = message.key.remoteJid;
+      if (!jid) continue;
 
-      await client.sendPresenceUpdate("composing", jid);
-
-      const response = await chat(jid, messageContent, hasImage);
-      const isToolExecuted = await handleToolCall(
-        client,
-        jid,
-        message,
-        response.tool_calls || [],
-      );
-
-      if (!isToolExecuted && response.text) {
-        await client.sendMessage(jid, {
-          text: response.text,
-        });
+      if (activeProcessingUsers.has(jid)) {
+        console.log(
+          `User ${jid} is already being processed. Skipping this message.`,
+        );
+        continue;
       }
 
-      await client.sendPresenceUpdate("paused", jid);
+      // Mark the user as being processed to prevent overlapping responses
+      activeProcessingUsers.add(jid);
+
+      const messageContent = getMessageContent(message) || "";
+      const hasImage = getMessageType(message) === "image";
+
+      try {
+        await client.sendPresenceUpdate("composing", jid);
+
+        const response = await chat(jid, messageContent, hasImage);
+        const isToolExecuted = await handleToolCall(
+          client,
+          jid,
+          message,
+          response.tool_calls || [],
+        );
+
+        if (!isToolExecuted && response.text) {
+          await client.sendMessage(jid, { text: response.text });
+        }
+      } catch (error) {
+        console.error("Error processing message:", error);
+
+        await client.sendMessage(jid, {
+          text: "Maaf sayang, terjadi kesalahan saat memproses pesanmu. Coba lagi nanti ya 😢.",
+        });
+      } finally {
+        activeProcessingUsers.delete(jid);
+        await client.sendPresenceUpdate("paused", jid);
+      }
     }
   });
 })();
