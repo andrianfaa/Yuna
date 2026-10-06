@@ -24,7 +24,12 @@ export function getMessageContent({ message }: WAMessage): string {
 export function getMessageType(message: WAMessage): string {
   if (message.message?.conversation) return "text";
   if (message.message?.extendedTextMessage) return "extendedText";
-  if (message.message?.imageMessage) return "image";
+  if (
+    message.message?.imageMessage ||
+    message.message?.extendedTextMessage?.contextInfo?.quotedMessage
+      ?.imageMessage
+  )
+    return "image";
   if (message.message?.videoMessage) return "video";
   if (message.message?.documentMessage) return "document";
   if (message.message?.stickerMessage) return "sticker";

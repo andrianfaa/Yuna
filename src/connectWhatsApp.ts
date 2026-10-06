@@ -40,8 +40,6 @@ async function connectWhatsApp() {
     }
   });
 
-  // sock.ev.on("messages.upsert", async (event) => messageUpsert(sock, event));
-
   sock.ev.on("connection.update", async ({ qr, connection }) => {
     if (qr) {
       const qrcode = await import("qrcode-terminal");
