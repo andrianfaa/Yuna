@@ -4,10 +4,14 @@ import {
 } from "@langchain/core/prompts";
 import { ChatGroq } from "@langchain/groq";
 import { AIMessage, BaseMessage, HumanMessage, SystemMessage } from "langchain";
-import { DEFAULT_AI_PROFILE } from "../app/config";
+import { DEFAULT_AI_PROFILE, DEFAULT_FEATURES_AND_TOOLS } from "../app/config";
 import { sessionHistory } from "../helpers/sessionHistory";
-import { stickerMakerTool } from "../tools/stickerMaker";
 import { getFormattedIndoDate } from "../utils/dateUtils";
+// Tools
+import { instagramDownloaderTool } from "../tools/instagramDownloader";
+import { stickerMakerTool } from "../tools/stickerMaker";
+import { tiktokDownloaderTool } from "../tools/tiktokDownloader";
+import { pinterestDownloaderTool } from "../tools/pinterestDownloader";
 
 const initModel = async () => {
   const model = new ChatGroq({
@@ -16,9 +20,17 @@ const initModel = async () => {
     temperature: 0.7,
     maxTokens: 1000,
   });
-  const modelWithTools = model.bindTools([stickerMakerTool]);
+  // Attach tools to the model
+  const modelWithTools = model.bindTools([
+    stickerMakerTool,
+    instagramDownloaderTool,
+    tiktokDownloaderTool,
+    pinterestDownloaderTool,
+    // Add more tools here as needed
+  ]);
   const promptTemplate = ChatPromptTemplate.fromMessages([
     new SystemMessage(DEFAULT_AI_PROFILE),
+    new SystemMessage(DEFAULT_FEATURES_AND_TOOLS),
     new MessagesPlaceholder("history"),
     ["human", "{input}"],
   ]);
@@ -38,7 +50,7 @@ export const chat = async (
 [Sistem: Pengguna mengirim gambar/media.] 
 
 Pesan: 
-${message || "Pengguna mengirim gambar, tetapi tidak ada teks yang menyertainya. Ikuti konteks chat sebelumnya. Jika User sedang membuat stiker, langsung gunakan tool 'make_sticker' untuk membuat stiker dari gambar yang dikirimkan pengguna."}`
+${message || "Pengguna mengirim gambar/media, tetapi tidak ada teks yang menyertainya. Ikuti konteks chat sebelumnya. Jika User sedang membuat stiker, langsung gunakan tool 'make_sticker' untuk membuat stiker dari gambar yang dikirimkan pengguna."}`
     : `[Waktu saat ini: ${currentDate}] 
 
 Pesan: 

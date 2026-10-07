@@ -79,15 +79,17 @@ dotenv.config();
         if (!isToolExecuted && response.text) {
           await client.sendMessage(jid, { text: response.text });
         }
+
+        await client.sendPresenceUpdate("paused", jid);
       } catch (error) {
         console.error("Error processing message:", error);
 
         await client.sendMessage(jid, {
           text: "Maaf sayang, terjadi kesalahan saat memproses pesanmu. Coba lagi nanti ya 😢.",
         });
+        await client.sendPresenceUpdate("paused", jid);
       } finally {
         activeProcessingUsers.delete(jid);
-        await client.sendPresenceUpdate("paused", jid);
       }
     }
   });
